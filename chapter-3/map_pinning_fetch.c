@@ -28,7 +28,7 @@ int fetch(const char* file_path, int key){
 }
 
 int main(int argc, char **argv) {
-	fetch(file_path1, 1);
+	fetch(file_path1, 10);
 	// fetch(file_path1, 2);
 	fetch(file_path2, 2);
 
