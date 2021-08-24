@@ -119,7 +119,7 @@ struct bpf_map_def SEC("maps") concurrrent_map = {
 
 ### 3.3 BPF映射类型
 
-<img src="/Users/jiangyikun/Library/Application Support/typora-user-images/image-20210824145809204.png" alt="image-20210824145809204" style="zoom:50%;" />
+<img src="/home/pics/bpf_map_type.png" style="zoom:50%;" />
 
 BPF_MAP_TYPE_HASH，哈希表映射，可使用任意大小的key和value，按需分配和释放，查找迅速。
 
