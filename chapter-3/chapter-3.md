@@ -158,7 +158,7 @@ result = bpf_map_lookup_elem(fd, &key, &value);		//根据key来查找value
 
 ## CODE
 bpf_fs是书中的样例代码。
-my_bpf_fs是根据对BPF映射的基本使用写了一个菜单操作BPF映射，可以创建、更新、读取、删除、遍历，查找并删除还不知道为什么不能调用成功。
+my_bpf_fs是根据对BPF映射的基本使用写了一个菜单操作BPF映射，可以创建、更新、读取、删除、遍历。查找并删除还不知道为什么不能调用成功。
 
 
 
