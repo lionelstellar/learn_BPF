@@ -49,9 +49,10 @@ int get_file_path(int flag, char *ret_path){
         scanf("%s", file_path);
         strcat(ret_path, file_path);
         
-    } else if ((flag == UPDATE || flag == FETCH || flag == DELETE) && cnt > 0) {
+    } else if ((flag == UPDATE || flag == FETCH || flag == DELETE || flag == ITERATE) \
+                && cnt > 0) {
         while(1) {
-            printf("Input the number of the file you wanna update:\n");
+            printf("Input the number of the file you wanna manipulate:\n");
             scanf("%d", &choice);
             if (choice <= 0 || choice > cnt ) {
                 printf("Invalid input!\n");
@@ -66,24 +67,24 @@ int get_file_path(int flag, char *ret_path){
         return GET_FILE_FAILED;
     }
 
-    printf("ret_path is %s\n", ret_path);
+    printf("the bpf mapping obj file is %s\n", ret_path);
     return GET_FILE_SUCCESS;
 }
 
 void get_key(int *key){
-	printf("Input Key:\n");
+	printf("[-] Input Key:\n");
     scanf("%d", key);
 }
 
 void get_value(int *value){
-	printf("Input Value:\n");
+	printf("[-] Input Value:\n");
     scanf("%d", value);
 }
 
 int create_map(){
 	int key, value, fd, added, pinned;
     char ret_path[20 + FILE_NAME_SIZE] = {0};
-	fd = bpf_create_map(BPF_MAP_TYPE_ARRAY, sizeof(int), sizeof(int), 100, 0);
+	fd = bpf_create_map(BPF_MAP_TYPE_HASH, sizeof(int), sizeof(int), 100, 0);
 
   	if (fd < 0) {
     	printf("Failed to create map: %d (%s)\n", fd, strerror(errno));
@@ -103,10 +104,10 @@ int create_map(){
   	// 4.4版本新加的，属于持久化eBPF。 有了这个，eBPF-maps和eBPF程序可以放入/sys/fs/bpf
   	pinned = bpf_obj_pin(fd, ret_path);
   	if (pinned < 0) {
-    	printf("Failed to pin map to the file system: %d (%s)\n", pinned,
-        strerror(errno));
+    	printf("Failed to pin map to the file system: %d (%s)\n", pinned, strerror(errno));
     	return -1;
   	}
+    printf("create map success!\n");
 	return 0;
 }
 
@@ -130,15 +131,15 @@ int update_map(){
     	return -1;
   	}
 
-    result = bpf_map_lookup_elem(fd, &key, &old_value);
+    result = bpf_map_update_elem(fd, &key, &old_value, BPF_ANY);
   	if (result < 0) {
-    	printf("Failed to read value from the map: %d (%s)\n", result,
-        strerror(errno));
+    	printf("Failed to read value from the map: %d (%s)\n", result, strerror(errno));
     	return -1;
   	}
     printf("old is %d\n", old_value);
     
-    result = bpf_map_update_elem(fd, &key, &value, BPF_ANY);
+    // 仅元素存在时更新
+    result = bpf_map_update_elem(fd, &key, &value, BPF_EXIST);
     if (result == 0) {
         printf("The value of key %d is changed from %d to %d\n", key, old_value, value);
     } else {
@@ -147,30 +148,6 @@ int update_map(){
     
     return 0;
 }
-
-// int fetch_map(){
-// 	int fd, key, value, result;
-//     char ret_path[20 + FILE_NAME_SIZE] = {0};
-//     get_file_path(FETCH, ret_path);
-//     get_key(&key);
-
-
-//   	fd = bpf_obj_get(ret_path);
-//   	if (fd < 0) {
-//     	printf("Failed to fetch the map: %d (%s)\n", fd, strerror(errno));
-//     	return -1;
-//   	}
-
-//   	result = bpf_map_lookup_elem(fd, &key, &value);
-//   	if (result < 0) {
-//     	printf("Failed to read value from the map: %d (%s)\n", result,
-//         strerror(errno));
-//     	return -1;
-//   	} 
-
-//   	printf("Value read from the map: '%d'\n", value);
-// 	return 0;
-// }
 
 int fetch_map(){
 	int fd, key, value, result;
@@ -184,17 +161,16 @@ int fetch_map(){
 
     get_key(&key);
     fd = bpf_obj_get(ret_path);
-    printf("path is %s\n", ret_path);
+    
   	if (fd < 0) {
     	printf("Failed to fetch the map: %d (%s)\n", fd, strerror(errno));
     	return -1;
   	}
 
   	result = bpf_map_lookup_elem(fd, &key, &value);
-    printf("result is %d\n", result);
+    // printf("result is %d\n", result);
   	if (result < 0) {
-    	printf("Failed to read value from the map: %d (%s)\n", result,
-        strerror(errno));
+    	printf("Failed to read value from the map: %d (%s)\n", result, strerror(errno));
     	return -1;
   	} 
 
@@ -204,12 +180,70 @@ int fetch_map(){
 
 
 int delete_map(){
+    int fd, key, value, result;
     char ret_path[20 + FILE_NAME_SIZE] = {0};
     int status = get_file_path(DELETE, ret_path);
     if(status != GET_FILE_SUCCESS) {
         printf("fail to delete!\n");
         return -1;
     }
+    get_key(&key);
+    fd = bpf_obj_get(ret_path);
+  	if (fd < 0) {
+    	printf("Failed to fetch the map: %d (%s)\n", fd, strerror(errno));
+    	return -1;
+  	}
 
+    result = bpf_map_delete_elem(fd, &key);
+    if (result < 0) {
+        printf("Failed to delete key from the map: %d (%s)\n", result, strerror(errno));
+    	return -1;
+    }
+    
+    printf("Key delete from the map: '%d'\n", key);
+    return 0;
+}
+
+int iterate_map(){
+    int fd, next_key, lookup_key, value, result;
+    lookup_key = -1;
+    char ret_path[20 + FILE_NAME_SIZE] = {0};
+    int status = get_file_path(DELETE, ret_path);
+    if(status != GET_FILE_SUCCESS) {
+        printf("fail to iterate!\n");
+        return -1;
+    }
+
+    while(bpf_map_get_next_key(fd, &lookup_key, &next_key) == 0){
+        bpf_map_lookup_elem(fd, &next_key, &value);
+        printf("The next key in the map is: '%d', value is: '%d'\n", next_key, value);
+        lookup_key = next_key;
+    }
+    printf("iterate OK!\n");
+    return 0;
+}
+
+int lookup_and_delete_map(){
+    int fd, key, value, result;
+    char ret_path[20 + FILE_NAME_SIZE] = {0};
+    int status = get_file_path(DELETE, ret_path);
+    if(status != GET_FILE_SUCCESS) {
+        printf("fail to delete!\n");
+        return -1;
+    }
+    get_key(&key);
+    fd = bpf_obj_get(ret_path);
+  	if (fd < 0) {
+    	printf("Failed to fetch the map: %d (%s)\n", fd, strerror(errno));
+    	return -1;
+  	}
+
+    result = bpf_map_lookup_and_delete_elem(fd, &key, &value);
+    if (result < 0) {
+        printf("Failed to delete key from the map: %d (%s)\n", result, strerror(errno));
+    	return -1;
+    }
+    
+    printf("Key delete from the map: '%d', value is '%d'\n", key, value);
     return 0;
 }

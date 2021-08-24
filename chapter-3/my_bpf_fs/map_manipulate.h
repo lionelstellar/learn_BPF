@@ -11,6 +11,8 @@ enum {
     UPDATE = 1,
     FETCH  = 2,
     DELETE = 3,
+    ITERATE= 4,
+    LOOKUP_DELETE = 5,
 };
 
 enum {
@@ -22,3 +24,5 @@ int create_map();
 int update_map();
 int fetch_map();
 int delete_map();
+int iterate_map();
+int lookup_and_delete_map();
