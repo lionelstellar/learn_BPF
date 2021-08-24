@@ -2,7 +2,7 @@
 
 ### 3.1 创建BPF映射
 
-1.使用BPF系统调用
+<font color=aqua>1.使用BPF系统调用</font>
 
 ```c
 int bpf(enum bpf_cmd cmd, union bpf_attr *attr, unsigned int size)
@@ -23,7 +23,7 @@ int bpf(enum bpf_cmd cmd, union bpf_attr *attr, unsigned int size)
 
 map_type是映射类型，3.3中会分析。
 
-2.使用bpf.h中对bpf系统调用的封装的LIBBPF_API——bpf_create_map()
+<font color=aqua>2.使用bpf.h中对bpf系统调用的封装的LIBBPF_API——bpf_create_map()</font>
 
 ```
 LIBBPF_API int bpf_create_map(enum bpf_map_type map_type, int key_size,
@@ -54,7 +54,7 @@ fd = bpf_create_map(BPF_MAP_TYPE_ARRAY, sizeof(int), sizeof(int), 100, flag);
 
 用户空间对fd进行操作，内核空间对my_map进行操作，内核使用map_data全局变量来保存BPF程序的映射信息（map_data[0].fd）。
 
-1.更新映射元素
+<font color=aqua>1.更新映射元素</font>
 
 ```
 result = bpf_map_update_elem(fd, &key, &value, flag); // flag 可为BPF_ANY, BPF_NOEXIST, BPF_EXIST
@@ -65,19 +65,19 @@ result = bpf_map_update_elem(fd, &key, &value, flag); // flag 可为BPF_ANY, BPF
 #define BPF_EXIST	2 /* update existing element */
 ```
 
-2.读取映射元素
+<font color=aqua>2.读取映射元素</font>
 
 ```
 result = bpf_map_lookup_elem(fd, &key, &value);
 ```
 
-3.删除映射元素
+<font color=aqua>3.删除映射元素</font>
 
 ```
 result = bpf_map_delete_elem(fd, &key);
 ```
 
-4.迭代映射元素
+<font color=aqua>4.迭代映射元素</font>
 
 ```
 while(bpf_map_get_next_key(fd, &lookup_key, &next_key) == 0){
@@ -87,13 +87,13 @@ while(bpf_map_get_next_key(fd, &lookup_key, &next_key) == 0){
 }
 ```
 
-5.查找并删除映射元素
+<font color=aqua>5.查找并删除映射元素</font>
 
 ```
 result = bpf_map_lookup_and_delete_elem(fd, &key, &value);
 ```
 
-6.并发访问元素
+<font color=aqua>6.并发访问元素</font>
 
 内核中有2个函数bpf_spin_lock和bpf_spin_unlock和自旋锁一起使用，例如给count元素添加信号：
 
