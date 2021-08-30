@@ -9,3 +9,8 @@ chapter-3/bpf_fs/delete
 chapter-3/bpf_fs/update
 chapter-3/my_bpf_fs/main
 chapter-3/fetch
+
+# chap4
+chapter-4/my_examples/uprobe/job
+chapter-4/book/uprobes/hello-bpf
+chapter-4/book/uretprobes/hello-bpf

@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 from bcc import BPF
 
 bpf_source = """
-int trace_bpf_prog_load(void ctx) {
+int trace_bpf_prog_load(void *ctx) {
   char comm[16];
   bpf_get_current_comm(&comm, sizeof(comm));
 

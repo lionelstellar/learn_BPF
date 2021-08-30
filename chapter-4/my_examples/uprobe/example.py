@@ -6,8 +6,9 @@ BPF_HASH(cache, u64, u64);
 
 int trace_start_time(struct pt_regs *ctx) {
   u64 pid = bpf_get_current_pid_tgid();
-  u64 start_time_ns = bpf_ktime_get_ms();
+  u64 start_time_ns = bpf_ktime_get_ns();
   cache.update(&pid, &start_time_ns);
+  bpf_trace_printk("trace start\\n");
   return 0;
 }
 """
@@ -26,6 +27,8 @@ int print_duration(struct pt_regs *ctx) {
 """
 
 bpf = BPF(text = bpf_source)
-bpf.attach_uprobe(name = "./hello-bpf", sym = "main.main", fn_name = "trace_start_time")
-bpf.attach_uretprobe(name = "./hello-bpf", sym = "main.main", fn_name = "print_duration")
+bpf.attach_uprobe(name = "./job", sym = "do_job1", fn_name = "trace_start_time")
+bpf.attach_uretprobe(name = "./job", sym = "do_job1", fn_name = "print_duration")
+bpf.attach_uprobe(name = "./job", sym = "do_job2", fn_name = "trace_start_time")
+bpf.attach_uretprobe(name = "./job", sym = "do_job2", fn_name = "print_duration")
 bpf.trace_print()
