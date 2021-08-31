@@ -1,3 +1,4 @@
+*.out
 # chap2
 chapter-2/*.o
 chapter-2/hello_world/monitor-exec
@@ -14,3 +15,4 @@ chapter-3/fetch
 chapter-4/my_examples/uprobe/job
 chapter-4/book/uprobes/hello-bpf
 chapter-4/book/uretprobes/hello-bpf
+chapter-4/book/usdt/hello_usdt
